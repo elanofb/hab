@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HabitaAi.Server", "HabitaAi.Server\HabitaAi.Server.csproj", "{2BC8353F-6130-4F00-9E20-A1926AB8D54A}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "habitaai.client", "habitaai.client\habitaai.client.esproj", "{087B8EF8-46EC-44F6-816E-3726857F3804}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "habitaai.webapi", "habitaai.webapi\habitaai.webapi.csproj", "{F61A93E6-17D0-4176-ADDE-1294E0A41F78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "habitaai.crawler1", "habitaai.crawler1\habitaai.crawler1.csproj", "{61EF61A1-BEA5-4F19-8699-E9BEC08E462D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "habitaai.web", "habitaai.web\habitaai.web.csproj", "{E75A497D-7A05-42E9-86A8-E672CF098CC4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2BC8353F-6130-4F00-9E20-A1926AB8D54A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BC8353F-6130-4F00-9E20-A1926AB8D54A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BC8353F-6130-4F00-9E20-A1926AB8D54A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BC8353F-6130-4F00-9E20-A1926AB8D54A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{087B8EF8-46EC-44F6-816E-3726857F3804}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{087B8EF8-46EC-44F6-816E-3726857F3804}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{087B8EF8-46EC-44F6-816E-3726857F3804}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{087B8EF8-46EC-44F6-816E-3726857F3804}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{087B8EF8-46EC-44F6-816E-3726857F3804}.Release|Any CPU.Build.0 = Release|Any CPU
+		{087B8EF8-46EC-44F6-816E-3726857F3804}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{F61A93E6-17D0-4176-ADDE-1294E0A41F78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F61A93E6-17D0-4176-ADDE-1294E0A41F78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F61A93E6-17D0-4176-ADDE-1294E0A41F78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F61A93E6-17D0-4176-ADDE-1294E0A41F78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61EF61A1-BEA5-4F19-8699-E9BEC08E462D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61EF61A1-BEA5-4F19-8699-E9BEC08E462D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61EF61A1-BEA5-4F19-8699-E9BEC08E462D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61EF61A1-BEA5-4F19-8699-E9BEC08E462D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E75A497D-7A05-42E9-86A8-E672CF098CC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E75A497D-7A05-42E9-86A8-E672CF098CC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E75A497D-7A05-42E9-86A8-E672CF098CC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E75A497D-7A05-42E9-86A8-E672CF098CC4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6E3FFDAE-C242-4B85-8014-8607732590EE}
+	EndGlobalSection
+EndGlobal

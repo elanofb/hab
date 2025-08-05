@@ -1,0 +1,119 @@
+using System;
+using System.Net.Http;
+using System.Text.Encodings.Web;
+using System.Collections.Generic;
+using Microsoft.Data.SqlClient;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using habitaai.webapi.Utils;
+using habitaai.webapi.Services;
+
+public class DynamicHandler {
+  public static async Task Handle(HttpContext context) {
+    context.Response.ContentType = "application/json; charset=utf-8";
+	
+	var mensagem = Helper.Hello();
+    var resultado = new {
+      Mensagem = mensagem
+    };
+    var json = JsonSerializer.Serialize(resultado);
+    await context.Response.WriteAsync(json, Encoding.UTF8);
+  }
+}
+
+using System;
+using System.Collections.Generic;
+using Microsoft.Data.SqlClient;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+public class DynamicHandler {
+  public static async Task Handle(HttpContext context) {
+    context.Response.ContentType = "application/json; charset=utf-8";
+	
+    var connectionString = "Server=DESKTOP-O3LGOT5;Database=HabitaAiDb;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;";
+    var results = new List < object > ();
+    using(var connection = new SqlConnection(connectionString)) {
+      await connection.OpenAsync();
+      var command = new SqlCommand("SELECT Id, Title, Price FROM Properties", connection);
+      using(var reader = await command.ExecuteReaderAsync()) {
+        while (await reader.ReadAsync()) {
+          results.Add(new {
+            Id = reader.GetInt32(0),
+            Title = reader.GetString(1),
+            Price = reader.GetDecimal(2)
+          });
+        }
+      }
+    }
+    var json = JsonSerializer.Serialize(results);
+    await context.Response.WriteAsync(json, Encoding.UTF8);
+  }
+}
+
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+public class DynamicHandler {
+  public static async Task ExecuteAsync(HttpContext context) {
+    using
+	context.Response.ContentType = "application/json; charset=utf-8";
+	
+    var client = new HttpClient();
+    var apiUrl = "https://localhost:7071/api/hello";
+    var response = await client.GetAsync(apiUrl);
+    var body = await response.Content.ReadAsStringAsync();
+    
+    await context.Response.WriteAsync(body, Encoding.UTF8);
+  }
+}
+
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+public class DynamicHandler {
+  public static async Task ExecuteAsync2(HttpContext context) {
+    using
+    var client = new HttpClient();
+    var apiUrl = "https://localhost:7071/api/getproperties";
+    var response = await client.GetAsync(apiUrl);
+    var body = await response.Content.ReadAsStringAsync();
+    context.Response.ContentType = "application/json; charset=utf-8";
+    await context.Response.WriteAsync(body, Encoding.UTF8);
+  }
+}
+
+using System;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using habitaai.webapi.Services;
+
+public class DynamicHandler
+{
+    public static async Task Handle(HttpContext context)
+    {
+        var data = new { Mensagem = "Oláaaarr! Chamado de dentro do código dinâmico." };
+
+        var options = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = true
+        };
+
+        var json = JsonSerializer.Serialize(data, options);
+        context.Response.ContentType = "application/json; charset=utf-8";
+        await context.Response.WriteAsync(json, Encoding.UTF8);
+    }
+}

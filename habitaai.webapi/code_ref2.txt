@@ -1,0 +1,65 @@
+// Controllers/DynamicController.cs
+using habitaai.webapi.Dynamic;
+using habitaai.webapi.domain;
+using Microsoft.AspNetCore.Mvc;
+
+namespace habitaai.webapi.Dynamic;
+
+[ApiController]
+[Route("api/[controller]")]
+public class DynamicController : ControllerBase
+{
+    private static readonly Dictionary<string, RequestDelegate> _handlers = new();
+
+    private readonly ILogger<DynamicController> _logger;
+    private readonly AppDbContext _context;
+
+    public DynamicController(ILogger<DynamicController> logger, AppDbContext context)
+    {
+        _logger = logger;
+        _context = context;
+    }
+
+    [HttpPost("registrar")]
+    public async Task<IActionResult> Registrar([FromBody] DynamicEndpoint endpoint)
+    {
+        try
+        {
+            var handler = DynamicCompiler.Compile(endpoint.SourceCode, endpoint.MethodName);
+
+            // Normaliza rota (sem barra inicial, lowercase)
+            var routeKey = endpoint.Route.Trim().TrimStart('/').ToLowerInvariant();
+
+            _handlers[routeKey] = handler;
+            DynamicControllerHelper.Register(routeKey, handler);
+
+            _context.DynamicEndpoints.Add(endpoint);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Endpoint registrado com sucesso." });
+        }
+        catch (Exception ex)
+        {
+            Logger.Log(endpoint.Route, endpoint, null, ex);
+            return BadRequest(new { erro = ex.Message });
+        }
+    }
+
+    [HttpGet("listar")]
+    public IActionResult Listar([FromServices] AppDbContext db)
+    {
+        var endpoints = db.Set<DynamicEndpoint>()
+                          .Where(e => e.Enabled)
+                          .Select(e => e.Route)
+                          .ToList();
+
+        return Ok(endpoints);
+    }
+
+    [HttpGet("testHandler")]
+    public IActionResult TestHandler([FromServices] AppDbContext db)
+    {
+        new DynamicHandler().ExecuteAsync();
+        return Ok();
+    }
+} // fim do controller

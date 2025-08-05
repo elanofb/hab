@@ -1,0 +1,29 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<div id="dados-api"></div>
+
+<script>
+$(document).ready(function(){
+  $.ajax({
+    url: "https://localhost:7071/api/getproperties", // Exemplo de URL da API
+    method: "GET",
+    success: function(response){
+      // Manipule a resposta da API aqui
+      //$("#dados-api").html("<p>Título: " + response.title + "</p><p>Completado: " + response.completed + "</p>");
+      var html = '';
+      $(response).each(function(index, element) {
+        html += "Id: " + element.Id + "<br>";
+        html += "Título: " + element.Title + "<br>";
+        html += "Price: " + element.Price + "<br>-----<br>";
+      });
+      //alert(JSON.stringify(response));
+      //$("#dados-api").html("<p>Id: " + response[0].Id + "</p><p>Título: " + response[0].Title + "</p><p>Price: " + response[0].Price + "</p>");
+      $("#dados-api").html(html);
+    },
+    error: function(xhr, status, error){
+      // Manipule erros aqui
+      $("#dados-api").html("<p>Erro ao carregar dados da API: " + status + " - " + error + "</p>");
+    }
+  });
+});
+</script>

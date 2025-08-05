@@ -1,0 +1,93 @@
+﻿using System.Net;
+using System.Net.Http.Headers;
+using HtmlAgilityPack;
+
+class Program_xx
+{
+    static async Task ____Main(string[] args)
+    {
+        var url = "https://www.zapimoveis.com.br/imovel/aluguel-casa-6-quartos-mobiliado-cumbuco-caucaia-ce-250m2-id-2557824056/?source=ranking%2Crp";
+
+
+        //// Cria HttpClient com headers simulando navegador real
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0.4472.124 Safari/537.36");
+        client.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7");
+        client.DefaultRequestHeaders.Referrer = new Uri("https://www.google.com");
+        client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+        client.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
+
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0.4472.124 Safari/537.36");
+        request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        request.Headers.Add("Accept-Language", "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7");
+        request.Headers.Referrer = new Uri("https://www.google.com");
+        request.Headers.Add("Connection", "keep-alive");
+        request.Headers.Add("Upgrade-Insecure-Requests", "1");
+        request.Headers.Add("Sec-Fetch-Dest", "document");
+        request.Headers.Add("Sec-Fetch-Mode", "navigate");
+        request.Headers.Add("Sec-Fetch-Site", "none");
+        request.Headers.Add("Sec-Fetch-User", "?1");
+        request.Headers.Add("Cookie", "zap-cookie-test=1; userType=consumer; loggedUser=false");
+        //request.Headers.Remove("User-Agent");
+        //request.Headers.Add("User-Agent", "Mozilla/5.0 (Linux; Android 10; SM-G970F) AppleWebKit/537.36 Chrome/91.0.4472.124 Mobile Safari/537.36");
+
+
+        try
+        {
+            // Faz download do HTML
+            var response = await client.SendAsync(request);
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                Console.WriteLine("❌ Ainda bloqueado com 403. Vamos tentar Playwright em seguida.");
+                return;
+            }
+
+            var html = await response.Content.ReadAsStringAsync();
+            File.WriteAllText("pagina_zap.html", html);
+            Console.WriteLine("✅ HTML salvo com sucesso.");
+
+            //var response = await client.GetAsync(url);
+            //response.EnsureSuccessStatusCode();
+            //if (response.StatusCode == HttpStatusCode.Forbidden)
+            //{
+            //    Console.WriteLine("❌ Acesso negado (403). Tente simular um navegador com headers realistas.");
+            //    return;
+            //}
+
+            //var html = await response.Content.ReadAsStringAsync();
+            // Salva HTML localmente (opcional)
+            //File.WriteAllText("pagina_zap.html", html);
+
+            // Carrega HTML para análise com HtmlAgilityPack
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+
+            Console.WriteLine("🟢 HTML carregado com sucesso.\n");
+
+            // Exemplo 1: extrair título do anúncio
+            var tituloNode = doc.DocumentNode.SelectSingleNode("//h1");
+            Console.WriteLine($"📌 Título: {tituloNode?.InnerText.Trim()}");
+
+            // Exemplo 2: extrair preço
+            var precoNode = doc.DocumentNode.SelectSingleNode("//p[contains(@class,'price')]");
+            Console.WriteLine($"💰 Preço: {precoNode?.InnerText.Trim()}");
+
+            // Exemplo 3: extrair endereço
+            var enderecoNode = doc.DocumentNode.SelectSingleNode("//p[contains(@class,'address')]");
+            Console.WriteLine($"📍 Endereço: {enderecoNode?.InnerText.Trim()}");
+
+            // Exemplo 4: extrair área
+            var areaNode = doc.DocumentNode.SelectSingleNode("//li[contains(text(),'m²')]");
+            Console.WriteLine($"📐 Área: {areaNode?.InnerText.Trim()}");
+
+            // Outros dados podem ser extraídos com base nas classes ou estruturas HTML específicas
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Erro: {ex.Message}");
+        }
+    }
+}

@@ -1,0 +1,6 @@
+@HabitaAi.Server_HostAddress = http://localhost:5197
+
+GET {{HabitaAi.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

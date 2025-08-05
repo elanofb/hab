@@ -1,0 +1,188 @@
+// HabitaAI - MVP Backend com Endpoints Dinâmicos
+// Projeto ASP.NET Core Web API com suporte à criação de rotas em tempo de execução
+
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using System.Text.Json;
+
+namespace habitaai.webapi;
+
+// MODELO DINÂMICO
+public class DynamicEndpoint
+{
+    public int Id { get; set; }
+    public string Route { get; set; } = default!;
+    public string SourceCode { get; set; } = default!;
+    public string MethodName { get; set; } = "Handle";
+    public bool Enabled { get; set; } = true;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+// COMPILADOR DINÂMICO
+public static class DynamicCompiler
+{
+    public static RequestDelegate Compile(string code, string methodName = "Handle")
+    {
+        var tree = CSharpSyntaxTree.ParseText(code);
+
+        var refs = AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.Location))
+            .Select(a => MetadataReference.CreateFromFile(a.Location))
+            .ToList();
+
+        var compilation = CSharpCompilation.Create(
+            Guid.NewGuid().ToString(),
+            new[] { tree },
+            references: refs,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+
+        using var ms = new MemoryStream();
+        var result = compilation.Emit(ms);
+        if (!result.Success)
+        {
+            var errors = string.Join("\n", result.Diagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .Select(d => d.ToString()));
+            throw new Exception($"Erro ao compilar código: \n{errors}");
+        }
+
+        ms.Seek(0, SeekOrigin.Begin);
+        var assembly = Assembly.Load(ms.ToArray());
+
+        var type = assembly.GetTypes().FirstOrDefault(t => t.GetMethod(methodName) != null)
+                   ?? throw new Exception("Método não encontrado.");
+
+        var method = type.GetMethod(methodName)!;
+
+        return (RequestDelegate)Delegate.CreateDelegate(typeof(RequestDelegate), method);
+    }
+}
+
+// REGISTRADOR DE HANDLERS
+public static class DynamicControllerHelper
+{
+    public static Dictionary<string, RequestDelegate> RegisteredHandlers { get; } = new();
+
+    public static void Register(string route, RequestDelegate handler)
+    {
+        RegisteredHandlers[route] = handler;
+    }
+}
+
+// LOG PERSONALIZADO
+public static class Logger
+{
+    public static bool DebugAtivo = true;
+
+    public static void Log(string route, object? request, object? response = null, Exception? ex = null)
+    {
+        if (!DebugAtivo) return;
+
+        var logPath = Path.Combine(AppContext.BaseDirectory, "Logs");
+        Directory.CreateDirectory(logPath);
+        var file = Path.Combine(logPath, $"{DateTime.UtcNow:yyyyMMdd}_dynamic.log");
+
+        var log = new
+        {
+            Timestamp = DateTime.UtcNow,
+            Route = route,
+            Request = request,
+            Response = response,
+            Exception = ex?.ToString()
+        };
+
+        File.AppendAllText(file, JsonSerializer.Serialize(log) + Environment.NewLine);
+    }
+}
+
+// CONTROLLER DE ENDPOINTS DINÂMICOS
+[ApiController]
+[Route("api/[controller]")]
+public class DynamicController : ControllerBase
+{
+    [HttpPost("registrar")]
+    public IActionResult Registrar([FromBody] DynamicEndpoint endpoint)
+    {
+        try
+        {
+            var handler = DynamicCompiler.Compile(endpoint.SourceCode, endpoint.MethodName);
+            DynamicControllerHelper.Register(endpoint.Route, handler);
+            return Ok(new { message = "Endpoint registrado com sucesso." });
+        }
+        catch (Exception ex)
+        {
+            Logger.Log(endpoint.Route, endpoint, null, ex);
+            return BadRequest(new { erro = ex.Message });
+        }
+    }
+
+    [HttpGet("listar")]
+    public IActionResult Listar() => Ok(DynamicControllerHelper.RegisteredHandlers.Keys);
+}
+
+// DB CONTEXT (MANTIDO PARA EXEMPLO FUTURO)
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public DbSet<Property> Properties => Set<Property>();
+}
+
+// ENTIDADE PADRÃO PARA EXEMPLO
+public class Property
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public string Type { get; set; }
+    public string City { get; set; }
+    public string Neighborhood { get; set; }
+    public decimal Price { get; set; }
+    public int Bedrooms { get; set; }
+    public int Bathrooms { get; set; }
+    public string ImageUrl { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+// PROGRAMA
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+        builder.Services.AddDbContext<AppDbContext>(opt =>
+            opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Services.AddCors(opt =>
+        {
+            opt.AddPolicy("ReactPolicy", policy =>
+            {
+                policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            });
+        });
+
+        var app = builder.Build();
+        app.UseCors("ReactPolicy");
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        // Aplica endpoints dinâmicos registrados
+        foreach (var route in DynamicControllerHelper.RegisteredHandlers)
+        {
+            app.Map(route.Key, route.Value);
+        }
+
+        app.UseAuthorization();
+        app.MapControllers();
+        app.Run();
+    }
+}

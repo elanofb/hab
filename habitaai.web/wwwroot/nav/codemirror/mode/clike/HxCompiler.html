@@ -1,0 +1,205 @@
+<!doctype html>
+
+<title>CodeMirror: C-like mode</title>
+<meta charset="utf-8" />
+<link rel=stylesheet href="../../doc/docs.css">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<link rel="stylesheet" href="../../lib/codemirror.css">
+<script src="../../lib/codemirror.js"></script>
+<script src="../../addon/edit/matchbrackets.js"></script>
+<link rel="stylesheet" href="../../addon/hint/show-hint.css">
+<script src="../../addon/hint/show-hint.js"></script>
+<script src="clike.js"></script>
+<style>
+    .CodeMirror {
+        border: 2px inset #dee;
+    }
+</style>
+<link rel="stylesheet" href="../../addon/display/fullscreen.css">
+<script src="../../addon/display/fullscreen.js"></script>
+
+<link rel="stylesheet" href="../../theme/night.css">
+<script src="../../mode/xml/xml.js"></script>
+
+<script>
+    function minhaFuncao() {
+        alert("Função chamada do iframe SIMMM!");
+    }
+</script>
+
+<style>
+    .CodeMirror {
+        border: 1px solid #eee;
+        height: auto;
+    }
+
+    body {
+        background-color: #000c25;
+    }
+</style>
+
+
+
+<div>
+
+    <div id="resultado" style="color:#eee"><button id="enviar">SALVAR</button></div><!--onclick="salvar()"-->
+
+    <textarea id="code">
+
+</textarea>
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        //alert(id);
+        $.ajax({//https://localhost:7071/api/Dynamic/obter/15
+            url: "https://localhost:7071/api/Dynamic/obter/" + id, // https://jsonplaceholder.typicode.com/todos/1
+            method: "GET",
+            success: function (response) {
+                // Manipula a resposta da API
+                //$("#resultado").text(JSON.stringify(response)); // Exibe a resposta no elemento com id "resultado"
+                //alert(JSON.stringify(response));
+                //JSON.stringify(response)
+                var source = response.sourceCode;
+                _editor.setValue(source);
+            },
+            error: function (xhr, status, error) {
+                // Manipula erros
+                //$("#resultado").text("Erro ao acessar a API: " + status + " - " + error);
+                alert("Erro ao acessar a API: " + status + " - " + error);
+            }
+        });
+    });
+
+    //minhaFuncao2();
+    //function minhaFuncao2() {
+    //    window.parent.minhaFuncao();
+    //}
+    //function salvar() {
+    //    const params = new URLSearchParams(window.location.search);
+    //    const id = params.get('id');
+
+    //    var texto = $("#resultado").text();
+
+    //    alert("Salvou! [" + id + "] >>> " + _editor.getValue());
+    //    var endpointUrl = "https://localhost:7071/api/dynamic/atualizarcode";   
+    //    var payload2 = {
+    //        id: parseInt(id),
+    //        routeLast: "api/hello0",
+    //        sourceCodeFull: "",
+    //        route: "api/hello0",
+    //        methodName: "Handle",
+    //        enabled: true,
+    //        sourceCode: "var resultado = \"teste atualizado\"; await context.Response.WriteAsync(resultado);",
+    //        routeUniqueId: "",
+    //        requestType: "",
+    //        inputText: "",
+    //        paramsInfo: "",
+    //        payloadJson: "",
+    //        flowJson: "",
+    //        description: "",
+    //        createdAt: "2025-08-02T14:40:58.024Z"
+    //    }
+    //    //postData(endpointUrl, payload2);
+    //}
+
+    $('#enviar').on('click', function () {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+
+        var texto = $("#resultado").text();
+
+        alert("--->Salvou! [" + id + "] >>> " + _editor.getValue());
+        //var endpointUrl = "https://localhost:7071/api/Dynamic/atualizarcode";
+        
+        const payload = {
+            id: 0,
+            routeUniqueId: id,
+            routeLast: "",
+            sourceCodeFull: "",
+            route: "api/qwert",
+            methodName: "Handle",
+            enabled: true,
+            sourceCode: _editor.getValue(),//"var resultado = \"testwwwe atualizado\"; await context.Response.WriteAsync(resultado);",
+            requestType: "",
+            inputText: "",
+            paramsInfo: "",
+            payloadJson: "",
+            flowJson: "",
+            description: "",
+            createdAt: "2025-08-02T14:40:58.024Z"
+        }
+
+        //alert(JSON.stringify(payload));
+
+        $.ajax({
+            url: "https://localhost:7071/api/Dynamic/atualizarcode",
+            type: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify(payload),
+            success: function (data) {
+                //$('#resposta').text(JSON.stringify(data, null, 2));
+                //alert(JSON.stringify(data, null, 2));
+            },
+            error: function (xhr) {
+                //$('#resposta').text("Erro: " + xhr.responseText);
+                //alert("Erro!" + xhr.responseText);
+            }
+        });
+    });
+
+    function postData(url, data) {
+        // Converte o objeto 'data' para uma string JSON
+        const jsonData = JSON.stringify(data);
+        alert(jsonData);
+        // Exemplo de como a requisição seria feita
+        console.log('Enviando dados para:', url);
+        console.log('Payload:', jsonData);
+
+        $.ajax({
+            url: url,
+            type: 'PUT',
+            contentType: 'application/json', // Define o tipo de conteúdo como JSON
+            data: jsonData, // Envia a string JSON
+            dataType: 'json', // Espera que a resposta seja JSON
+            success: function (response) {
+                // Esta função é executada se a requisição for bem-sucedida
+                console.log('Sucesso:', response);
+                // Aqui você pode manipular a resposta do servidor
+                alert('Dados enviados com sucesso!');
+            },
+            error: function (xhr, status, error) {
+                // Esta função é executada se houver um erro na requisição
+                console.error('Erro:', error);
+                console.error('Status:', status);
+                console.error('Resposta do servidor:', xhr.responseText);
+                // Aqui você pode tratar o erro de forma mais detalhada
+                alert('Ocorreu um erro ao enviar os dados.');
+            }
+        });
+    }
+
+    var _editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-csharp",
+        theme: "night",
+        extraKeys: {
+            "F11": function (cm) {
+                cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+            },
+            "Esc": function (cm) {
+                if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+            }
+        }
+    });
+    var mac = CodeMirror.keyMap.default == CodeMirror.keyMap.macDefault;
+    CodeMirror.keyMap.default[(mac ? "Cmd" : "Ctrl") + "-Space"] = "autocomplete";
+</script>
+

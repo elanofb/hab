@@ -1,0 +1,6 @@
+@habitaai.webapi_HostAddress = http://localhost:5201
+
+GET {{habitaai.webapi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
